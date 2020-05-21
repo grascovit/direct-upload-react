@@ -7,9 +7,10 @@
 }
 
 .main > .documents-list {
-  margin-top: 1em;
+  text-align: center;
+  margin-bottom: 2em;
 }
 
 .documents-list > .document {
-  margin-top: 2em;
+  margin-top: 0.5em;
 }
