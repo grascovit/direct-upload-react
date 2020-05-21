@@ -3,7 +3,6 @@ import axios from 'axios';
 import './App.css';
 
 function App() {
-  const BASE_API_URL = 'http://localhost:5000/api/v1';
   const [documents, updateDocuments] = useState([]);
 
   useEffect(() => {
@@ -11,7 +10,7 @@ function App() {
   }, []);
 
   const fetchDocuments = () => {
-    axios.get(`${BASE_API_URL}/documents`).then(response => {
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/documents`).then(response => {
       updateDocuments(response.data);
     });
   }
@@ -22,7 +21,7 @@ function App() {
       content_type: contentType
     };
 
-    axios.post(`${BASE_API_URL}/documents`, data).then(response => {
+    axios.post(`${process.env.REACT_APP_API_BASE_URL}/documents`, data).then(response => {
       updateDocuments(documents => [...documents, response.data]);
     });
   }
@@ -50,7 +49,7 @@ function App() {
         content_type: file.type
       }
 
-      axios.post(`${BASE_API_URL}/presigned_urls`, data).then(response => {
+      axios.post(`${process.env.REACT_APP_API_BASE_URL}/presigned_urls`, data).then(response => {
         const url = response.data.url;
         const fields = response.data.fields;
 
