@@ -1,0 +1,15 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.main > .documents-list {
+  margin-top: 1em;
+}
+
+.documents-list > .document {
+  margin-top: 2em;
+}
