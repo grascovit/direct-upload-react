@@ -8,6 +8,7 @@ function App() {
   const [isLoading, toggleIsLoading] = useState(false);
   const [isUploading, toggleIsUploading] = useState(false);
   const [error, updateError] = useState(undefined);
+  const [deltaTime, updateDeltaTime] = useState(undefined);
 
   useEffect(() => {
     fetchDocuments();
@@ -66,6 +67,7 @@ function App() {
     const files = event.target.files;
 
     toggleIsUploading(true);
+    const start = Date.now();
 
     Array.from(files).forEach(file => {
       promises.push(getPresignedUrl(file));
@@ -75,6 +77,7 @@ function App() {
       updateError('There was a problem while trying to upload your file(s). Please try again.');
     }).finally(() => {
       toggleIsUploading(false);
+      updateDeltaTime(((Date.now() - start) / 1000).toFixed(2));
     });
   }
 
@@ -101,6 +104,9 @@ function App() {
       <input type="file" multiple="multiple" onChange={handleFilesUpload}/>
       {
         isUploading ? <img className="spinner spinner-upload" alt="Spinner" src={spinner}/> : ''
+      }
+      {
+        deltaTime ? <p>Finished in {deltaTime}s</p> : ''
       }
       {
         error ? <p className="error">{error}</p> : ''
