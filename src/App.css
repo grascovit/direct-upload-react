@@ -8,9 +8,23 @@
 
 .main > .documents-list {
   text-align: center;
-  margin-bottom: 2em;
+  margin-bottom: 1em;
 }
 
-.documents-list > .document {
+.main > .documents-list > .document {
   margin-top: 0.5em;
+}
+
+.error {
+  margin-top: 1em;
+  font-weight: bold;
+  color: red;
+}
+
+.spinner {
+  height: 36px;
+}
+
+.spinner-upload {
+  margin-top: 1em;
 }

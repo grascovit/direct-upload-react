@@ -1,17 +1,24 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import './App.css';
+import spinner from './spinner.gif';
 
 function App() {
   const [documents, updateDocuments] = useState([]);
+  const [isLoading, toggleIsLoading] = useState(false);
+  const [isUploading, toggleIsUploading] = useState(false);
+  const [error, updateError] = useState(undefined);
 
   useEffect(() => {
     fetchDocuments();
   }, []);
 
   const fetchDocuments = () => {
+    toggleIsLoading(true);
+
     axios.get(`${process.env.REACT_APP_API_BASE_URL}/documents`).then(response => {
       updateDocuments(response.data);
+      toggleIsLoading(false);
     });
   }
 
@@ -21,7 +28,7 @@ function App() {
       content_type: contentType
     };
 
-    axios.post(`${process.env.REACT_APP_API_BASE_URL}/documents`, data).then(response => {
+    return axios.post(`${process.env.REACT_APP_API_BASE_URL}/documents`, data).then(response => {
       updateDocuments(documents => [...documents, response.data]);
     });
   }
@@ -35,30 +42,47 @@ function App() {
 
     formData.append('file', file);
 
-    axios.post(url, formData).then(response => {
-      createDocument(file.name, file.type);
-    })
+    return axios.post(url, formData).then(() => {
+      return createDocument(file.name, file.type);
+    });
+  }
+
+  const getPresignedUrl = (file) => {
+    const data = {
+      name: file.name,
+      content_type: file.type
+    }
+
+    return axios.post(`${process.env.REACT_APP_API_BASE_URL}/presigned_urls`, data).then(response => {
+      const url = response.data.url;
+      const fields = response.data.fields;
+
+      return uploadFileToS3(file, url, fields);
+    });
   }
 
   const handleFilesUpload = (event) => {
+    const promises = [];
     const files = event.target.files;
 
+    toggleIsUploading(true);
+
     Array.from(files).forEach(file => {
-      const data = {
-        name: file.name,
-        content_type: file.type
-      }
+      promises.push(getPresignedUrl(file));
+    });
 
-      axios.post(`${process.env.REACT_APP_API_BASE_URL}/presigned_urls`, data).then(response => {
-        const url = response.data.url;
-        const fields = response.data.fields;
-
-        uploadFileToS3(file, url, fields);
-      });
+    Promise.all(promises).catch(() => {
+      updateError('There was a problem while trying to upload your file(s). Please try again.');
+    }).finally(() => {
+      toggleIsUploading(false);
     });
   }
 
   const renderDocuments = () => {
+    if (isLoading) {
+      return <img className="spinner" alt="Spinner" src={spinner}/>
+    }
+
     return documents.map(document => {
       return (
         <div key={document.id} className="document">
@@ -75,6 +99,12 @@ function App() {
         {renderDocuments()}
       </div>
       <input type="file" multiple="multiple" onChange={handleFilesUpload}/>
+      {
+        isUploading ? <img className="spinner spinner-upload" alt="Spinner" src={spinner}/> : ''
+      }
+      {
+        error ? <p className="error">{error}</p> : ''
+      }
     </div>
   );
 }
